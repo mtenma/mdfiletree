@@ -1,9 +1,23 @@
 # MDFileTree
 
-表の再現性を重視した、macOS 向けの Markdown リーダーです。Tauri v2 で作っています。
+表の再現性を重視した Markdown リーダーです。Tauri v2 で作っています。
 
 一般的な Markdown ビューアは GFM のパイプ表しか扱えず、結合セルや複数行セルを含む表が崩れます。
 MDFileTree は MultiMarkdown の拡張表構文と生 HTML の表を両方そのまま通し、書いたとおりに読めることを目指しています。
+
+## 入手
+
+実行ファイルは [リリースページ](https://github.com/mtenma/mdfiletree/releases/latest) から取得できます。
+
+| OS | ファイル |
+| --- | --- |
+| macOS 11 以降（Intel / Apple Silicon 共通） | `MDFileTree_(版)_universal.dmg` |
+| Windows 10 / 11（64bit） | `MDFileTree_(版)_x64-setup.exe`（インストーラ）<br>`MDFileTree_(版)_x64_en-US.msi`（MSI 版） |
+
+署名・公証をしていないため、初回だけ警告が出ます。
+
+- macOS — アプリを右クリックして「開く」を選ぶか、「システム設定 › プライバシーとセキュリティ」から許可します
+- Windows — SmartScreen の画面で「詳細情報」→「実行」を選びます
 
 ## 画面
 
@@ -98,6 +112,9 @@ macOS から Windows 向けにクロスコンパイルすることはできま�
 （`tauri-winres` が Windows のリソースコンパイラを必要とします）。
 Windows 版は GitHub Actions の `windows-latest` で組み立てています。
 
+`v0.1.0` のようなタグを push すると、両プラットフォームを組み立てて
+リリースページに実行ファイルを添えるところまで自動で走ります。
+
 `samples/` に確認用の Markdown を置いています。
 
 - `tables.md` — 表の全パターン（結合・複数行・キャプション・生 HTML・横に長い表・縦に長い表）
@@ -139,5 +156,5 @@ Shiki を無害化の**後**に置いているのは、DOMPurify が Shiki の C
 ## 制限
 
 - macOS で動作を確認しています。Windows 向けのコードは入れてありますが、実機での確認はこれからです
-- 署名・公証をしていないため、配布した `.app` は初回に Gatekeeper の警告が出ます
+- 署名・公証をしていないため、初回起動時に警告が出ます（[入手](#入手)を参照）
 - 文書内検索は、複数の要素にまたがった語（`a<b>bc</b>` の "abc" など）は見つけられません
