@@ -16,15 +16,21 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Intel と Apple Silicon の両方で動くように universal で作る
+          # Intel と Apple Silicon の両方で動くように universal で作る。
+          # 添えるファイルは OS ごとに違うので、ここで指定する
+          # （両方まとめて書くと、作られない側のパターンで弾かれる）
           - label: macOS (Universal)
             os: macos-latest
             target: universal-apple-darwin
             rustTargets: aarch64-apple-darwin,x86_64-apple-darwin
+            artifacts: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
           - label: Windows (x64)
             os: windows-latest
             target: x86_64-pc-windows-msvc
             rustTargets: x86_64-pc-windows-msvc
+            artifacts: |
+              src-tauri/target/x86_64-pc-windows-msvc/release/bundle/msi/*.msi
+              src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis/*.exe
 
     runs-on: ${{ matrix.os }}
 
@@ -56,9 +62,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           # 両ジョブが同じタグのリリースに追記していく
-          files: |
-            src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg
-            src-tauri/target/${{ matrix.target }}/release/bundle/msi/*.msi
-            src-tauri/target/${{ matrix.target }}/release/bundle/nsis/*.exe
+          files: ${{ matrix.artifacts }}
           fail_on_unmatched_files: true
           generate_release_notes: true
