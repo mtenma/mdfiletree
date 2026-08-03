@@ -1,3 +1,4 @@
+import { accel } from '../lib/platform'
 import type { ResolvedTheme } from '../types'
 
 interface ToolbarProps {
@@ -52,7 +53,7 @@ export function Toolbar({
       <button
         type="button"
         className="tool-button"
-        title="戻る (⌘[)"
+        title={`戻る (${accel('⌘[')})`}
         aria-label="戻る"
         disabled={!canGoBack}
         onClick={onBack}
@@ -62,7 +63,7 @@ export function Toolbar({
       <button
         type="button"
         className="tool-button"
-        title="進む (⌘])"
+        title={`進む (${accel('⌘]')})`}
         aria-label="進む"
         disabled={!canGoForward}
         onClick={onForward}
@@ -75,7 +76,7 @@ export function Toolbar({
       <button
         type="button"
         className="tool-button"
-        title="フォルダを開く (⇧⌘O)"
+        title={`フォルダを開く (${accel('⇧⌘O')})`}
         aria-label="フォルダを開く"
         onClick={onOpenFolder}
       >
@@ -84,7 +85,7 @@ export function Toolbar({
       <button
         type="button"
         className="tool-button"
-        title="ファイルを開く (⌘O)"
+        title={`ファイルを開く (${accel('⌘O')})`}
         aria-label="ファイルを開く"
         onClick={onOpenFile}
       >
@@ -106,7 +107,7 @@ export function Toolbar({
         <button
           type="button"
           className="tool-button"
-          title="フォルダツリー (⌘\)"
+          title={`フォルダツリー (${accel('⌘\\')})`}
           aria-label="フォルダツリーの表示切り替え"
           aria-pressed={treeVisible}
           onClick={onToggleTree}
@@ -116,7 +117,7 @@ export function Toolbar({
         <button
           type="button"
           className="tool-button"
-          title="目次 (⌘⌥\)"
+          title={`目次 (${accel('⌘⌥\\')})`}
           aria-label="目次の表示切り替え"
           aria-pressed={tocVisible}
           onClick={onToggleToc}
@@ -129,7 +130,7 @@ export function Toolbar({
         <button
           type="button"
           className="tool-button"
-          title="検索 (⌘F)"
+          title={`検索 (${accel('⌘F')})`}
           aria-label="文書内を検索"
           disabled={!hasDocument}
           onClick={onFind}
@@ -142,7 +143,7 @@ export function Toolbar({
         <button
           type="button"
           className="tool-button"
-          title="縮小 (⌘-)"
+          title={`縮小 (${accel('⌘-')})`}
           aria-label="文字を小さく"
           onClick={onZoomOut}
         >
@@ -151,7 +152,7 @@ export function Toolbar({
         <button
           type="button"
           className="tool-button"
-          title="実際のサイズ (⌘0)"
+          title={`実際のサイズ (${accel('⌘0')})`}
           aria-label="文字サイズを戻す"
           onClick={onZoomReset}
         >
@@ -160,7 +161,7 @@ export function Toolbar({
         <button
           type="button"
           className="tool-button"
-          title="拡大 (⌘+)"
+          title={`拡大 (${accel('⌘+')})`}
           aria-label="文字を大きく"
           onClick={onZoomIn}
         >
@@ -172,7 +173,7 @@ export function Toolbar({
         <button
           type="button"
           className="tool-button"
-          title="HTML として書き出す (⌘E)"
+          title={`HTML として書き出す (${accel('⌘E')})`}
           aria-label="HTML として書き出す"
           disabled={!hasDocument}
           onClick={onExport}
@@ -182,7 +183,7 @@ export function Toolbar({
         <button
           type="button"
           className="tool-button"
-          title="プリント (⌘P)"
+          title={`プリント (${accel('⌘P')})`}
           aria-label="プリント"
           disabled={!hasDocument}
           onClick={onPrint}
@@ -193,7 +194,7 @@ export function Toolbar({
         <button
           type="button"
           className="tool-button"
-          title="ライト / ダーク (⌘⇧L)"
+          title={`ライト / ダーク (${accel('⌘⇧L')})`}
           aria-label="配色を切り替え"
           onClick={onToggleTheme}
         >

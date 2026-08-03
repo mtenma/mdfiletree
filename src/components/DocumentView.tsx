@@ -13,7 +13,8 @@ import { highlightVisibleCodeBlocks } from '../markdown/highlight'
 import { renderMermaidBlocks } from '../markdown/mermaid'
 import type { RenderResult } from '../markdown/renderer'
 import { formatFrontMatterValue } from '../markdown/frontmatter'
-import { revealInFinder } from '../lib/ipc'
+import { revealPath } from '../lib/ipc'
+import { FILE_MANAGER } from '../lib/platform'
 import type { ResolvedTheme, TocItem } from '../types'
 
 export type ScrollTarget =
@@ -259,7 +260,9 @@ export function DocumentView({
       }
 
       if (kind === 'file') {
-        void revealInFinder(value).catch(() => onError(`Finder で表示できませんでした: ${value}`))
+        void revealPath(value).catch(() =>
+          onError(`${FILE_MANAGER} で表示できませんでした: ${value}`),
+        )
       }
     },
     [bodyRef, onError, onOpenDoc, scrollerRef],

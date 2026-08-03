@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 
+import { accel } from '../lib/platform'
+
 interface SearchBarProps {
   query: string
   total: number
@@ -58,7 +60,7 @@ export function SearchBar({
       <button
         type="button"
         className="tool-button"
-        title="前を検索 (⇧⌘G)"
+        title={`前を検索 (${accel('⇧⌘G')})`}
         aria-label="前を検索"
         disabled={total === 0}
         onClick={onPrevious}
@@ -68,7 +70,7 @@ export function SearchBar({
       <button
         type="button"
         className="tool-button"
-        title="次を検索 (⌘G)"
+        title={`次を検索 (${accel('⌘G')})`}
         aria-label="次を検索"
         disabled={total === 0}
         onClick={onNext}

@@ -33,7 +33,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["app", "dmg"],
+    "targets": "all",
     "category": "Productivity",
     "shortDescription": "Markdown リーダー",
     "longDescription": "表の再現性を重視した Markdown ビューア",

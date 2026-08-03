@@ -94,6 +94,10 @@ pnpm tauri build        # .app と .dmg を生成
 Rust 側は `cargo check --manifest-path src-tauri/Cargo.toml` で確認します
 （`cargo clippy` を使う場合は `rustup component add clippy` が必要です）。
 
+macOS から Windows 向けにクロスコンパイルすることはできません
+（`tauri-winres` が Windows のリソースコンパイラを必要とします）。
+Windows 版は GitHub Actions の `windows-latest` で組み立てています。
+
 `samples/` に確認用の Markdown を置いています。
 
 - `tables.md` — 表の全パターン（結合・複数行・キャプション・生 HTML・横に長い表・縦に長い表）
@@ -134,6 +138,6 @@ Shiki を無害化の**後**に置いているのは、DOMPurify が Shiki の C
 
 ## 制限
 
-- 動作確認は macOS のみです
+- macOS で動作を確認しています。Windows 向けのコードは入れてありますが、実機での確認はこれからです
 - 署名・公証をしていないため、配布した `.app` は初回に Gatekeeper の警告が出ます
 - 文書内検索は、複数の要素にまたがった語（`a<b>bc</b>` の "abc" など）は見つけられません

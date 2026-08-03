@@ -24,6 +24,18 @@ serde_json = "1"
 notify = "8"
 base64 = "0.23"
 
+# macOS は同じアプリが二重に起動しないので不要。
+# Windows / Linux はファイルを開くたびに別プロセスが立ち上がるため、
+# 2 つ目以降のプロセスから最初のプロセスへパスを渡すのに使う。
+[target.'cfg(any(target_os = "windows", target_os = "linux"))'.dependencies]
+tauri-plugin-single-instance = "2"
+
+# std::fs::canonicalize は Windows で `\\?\C:\...` を返す。
+# そのまま画面に出すと読みにくく、パス比較も合わなくなるため、
+# 素直な形に直してくれる dunce を通す。
+[target.'cfg(windows)'.dependencies]
+dunce = "1"
+
 [profile.release]
 codegen-units = 1
 lto = true

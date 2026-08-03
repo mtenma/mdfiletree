@@ -18,9 +18,25 @@ pub struct DocumentPayload {
     pub modified: Option<u64>,
 }
 
+/// パスを絶対形に直す。
+///
+/// Windows の `std::fs::canonicalize` は `\\?\C:\...` という装飾付きの形を返す。
+/// 画面に出すと読みにくく、フロント側のパス判定とも噛み合わないため、
+/// dunce を通して素直な `C:\...` に戻す。
+pub fn canonicalize(path: &Path) -> std::io::Result<PathBuf> {
+    #[cfg(windows)]
+    {
+        dunce::canonicalize(path)
+    }
+    #[cfg(not(windows))]
+    {
+        std::fs::canonicalize(path)
+    }
+}
+
 fn resolve(path: &str) -> Result<PathBuf, String> {
     let p = PathBuf::from(path);
-    std::fs::canonicalize(&p).map_err(|e| format!("パスを解決できません ({path}): {e}"))
+    canonicalize(&p).map_err(|e| format!("パスを解決できません ({path}): {e}"))
 }
 
 /// BOM を除去し、改行コードを LF に揃えたうえで文字列化する。
@@ -141,15 +157,38 @@ pub fn print_document<R: Runtime>(window: WebviewWindow<R>) -> Result<(), String
         .map_err(|e| format!("印刷ダイアログを開けません: {e}"))
 }
 
+/// ファイルの置き場所を、その OS のファイル管理アプリで開く
 #[tauri::command]
-pub fn reveal_in_finder(path: String) -> Result<(), String> {
+pub fn reveal_path(path: String) -> Result<(), String> {
     let p = resolve(&path)?;
-    std::process::Command::new("open")
-        .arg("-R")
-        .arg(&p)
+
+    #[cfg(target_os = "macos")]
+    let mut command = {
+        let mut c = std::process::Command::new("open");
+        c.arg("-R").arg(&p);
+        c
+    };
+
+    #[cfg(target_os = "windows")]
+    let mut command = {
+        let mut c = std::process::Command::new("explorer");
+        // explorer は選択に成功しても終了コードが 1 になることがあるため、
+        // 起動できたかどうかだけを見る
+        c.arg(format!("/select,{}", p.display()));
+        c
+    };
+
+    #[cfg(not(any(target_os = "macos", target_os = "windows")))]
+    let mut command = {
+        let mut c = std::process::Command::new("xdg-open");
+        c.arg(p.parent().unwrap_or(&p));
+        c
+    };
+
+    command
         .spawn()
         .map(|_| ())
-        .map_err(|e| format!("Finder で表示できません: {e}"))
+        .map_err(|e| format!("ファイルの場所を開けません: {e}"))
 }
 
 #[derive(Serialize)]
@@ -162,7 +201,7 @@ pub struct PathKind {
 
 #[tauri::command]
 pub fn path_kind(path: String) -> PathKind {
-    match std::fs::canonicalize(PathBuf::from(&path)) {
+    match canonicalize(&PathBuf::from(&path)) {
         Ok(p) => {
             let is_dir = p.is_dir();
             PathKind {

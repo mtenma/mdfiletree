@@ -101,7 +101,7 @@ pub fn dispatch<R: Runtime>(app: &AppHandle<R>, paths: Vec<String>) {
     for path in paths {
         // フロントが記録するパスは正規化済みなので、突き合わせる前に形を揃える。
         // コマンドラインから相対パスで渡された場合もここで絶対パスになる。
-        let path = std::fs::canonicalize(&path)
+        let path = crate::commands::canonicalize(std::path::Path::new(&path))
             .map(|resolved| resolved.to_string_lossy().to_string())
             .unwrap_or(path);
 

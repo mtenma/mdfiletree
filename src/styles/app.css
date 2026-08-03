@@ -46,11 +46,16 @@ body {
   gap: 10px;
   flex: 0 0 auto;
   height: 46px;
-  /* macOS の信号機ボタンの下に潜り込まないよう左を空ける */
-  padding: 0 12px 0 84px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--border);
   background: var(--bg-elevated);
   user-select: none;
+}
+
+/* macOS はタイトルバーを重ねているので、信号機ボタンの下に潜り込まないよう左を空ける。
+   Windows は通常のタイトルバーが別にあるため余白は要らない */
+:root[data-platform='macos'] .toolbar {
+  padding-left: 84px;
 }
 
 .toolbar-title {

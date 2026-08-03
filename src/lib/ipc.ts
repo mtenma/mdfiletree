@@ -13,7 +13,8 @@ export const writeTextFile = (path: string, content: string) =>
 /** WKWebView は window.print() を持たないため Rust 側から印刷する */
 export const printDocument = () => invoke<void>('print_document')
 
-export const revealInFinder = (path: string) => invoke<void>('reveal_in_finder', { path })
+/** ファイルの置き場所を OS のファイル管理アプリで開く */
+export const revealPath = (path: string) => invoke<void>('reveal_path', { path })
 
 export const pathKind = (path: string) => invoke<PathKind>('path_kind', { path })
 

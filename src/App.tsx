@@ -20,7 +20,7 @@ import {
   pathKind,
   printDocument,
   readDocument,
-  revealInFinder,
+  revealPath,
   scanTree,
   setWindowDocument,
   startWatch,
@@ -28,6 +28,7 @@ import {
   writeTextFile,
 } from './lib/ipc'
 import { MD_EXTS, basename, dirname, relativeTo } from './lib/paths'
+import { IS_MAC, accel } from './lib/platform'
 import { offsetWithin, topmostHeadingId } from './markdown/dom'
 import { renderMarkdown, type RenderResult } from './markdown/renderer'
 import {
@@ -126,6 +127,11 @@ export default function App() {
   useEffect(() => {
     document.documentElement.dataset.theme = theme
   }, [theme])
+
+  // ウィンドウ枠の作りが OS で違うため、CSS から参照できるようにしておく
+  useEffect(() => {
+    document.documentElement.dataset.platform = IS_MAC ? 'macos' : 'windows'
+  }, [])
 
   useEffect(() => {
     document.documentElement.style.setProperty('--font-scale', String(settings.fontScale))
@@ -466,7 +472,7 @@ export default function App() {
   const handleReveal = useCallback(() => {
     const path = currentRef.current?.payload.path
     if (!path) return
-    void revealInFinder(path).catch((caught) => setError(describeError(caught)))
+    void revealPath(path).catch((caught) => setError(describeError(caught)))
   }, [])
 
   const openSearch = useCallback(() => setSearchOpen(true), [])
@@ -660,7 +666,10 @@ export default function App() {
         return
       }
 
-      if (!event.metaKey || event.ctrlKey || event.altKey) return
+      // 修飾キーは macOS が ⌘、Windows が Ctrl。もう一方が押されていたら別の操作とみなす
+      const modifier = IS_MAC ? event.metaKey : event.ctrlKey
+      const otherModifier = IS_MAC ? event.ctrlKey : event.metaKey
+      if (!modifier || otherModifier || event.altKey) return
 
       const map: Record<string, string> = {
         f: 'find',
@@ -753,7 +762,7 @@ export default function App() {
                   type="button"
                   className="tool-button"
                   style={{ height: 20, minWidth: 22, fontSize: 12 }}
-                  title="フォルダを開く (⌘⇧O)"
+                  title={`フォルダを開く (${accel('⌘⇧O')})`}
                   aria-label="フォルダを開く"
                   onClick={() => void pickFolder()}
                 >

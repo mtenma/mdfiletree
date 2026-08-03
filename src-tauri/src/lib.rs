@@ -9,7 +9,27 @@ use tauri::Manager;
 pub use window::OpenQueue;
 
 pub fn run() {
-    tauri::Builder::default()
+    #[allow(unused_mut)]
+    let mut builder = tauri::Builder::default();
+
+    // Windows / Linux ではファイルを開くたびに新しいプロセスが立ち上がる。
+    // 2 つ目以降の起動を最初のプロセスへ引き渡し、macOS の
+    // 「このアプリケーションで開く」と同じ流れに合わせる。
+    #[cfg(any(target_os = "windows", target_os = "linux"))]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, argv, _cwd| {
+            let paths: Vec<String> = argv
+                .into_iter()
+                .skip(1)
+                .filter(|a| !a.starts_with('-'))
+                .collect();
+            if !paths.is_empty() {
+                window::dispatch(app, paths);
+            }
+        }));
+    }
+
+    builder
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::new().build())
@@ -28,7 +48,7 @@ pub fn run() {
             commands::read_file_data_uri,
             commands::write_text_file,
             commands::print_document,
-            commands::reveal_in_finder,
+            commands::reveal_path,
             commands::path_kind,
             commands::allow_asset_dir,
             commands::take_pending_open,

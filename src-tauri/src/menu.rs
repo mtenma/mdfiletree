@@ -23,8 +23,17 @@ fn item<R: Runtime>(
     }
 }
 
-pub fn init<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
-    let app_menu = Submenu::with_items(
+/// ファイルの置き場所を開くアプリの呼び名
+#[cfg(target_os = "windows")]
+const REVEAL_LABEL: &str = "エクスプローラーで表示";
+#[cfg(not(target_os = "windows"))]
+const REVEAL_LABEL: &str = "Finder で表示";
+
+/// アプリ名のメニュー（「MDFileTree について」など）は macOS だけの作法。
+/// サービスや「ほかを隠す」も macOS 固有なので、まとめてここに閉じ込める。
+#[cfg(target_os = "macos")]
+fn app_submenu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
+    Submenu::with_items(
         app,
         "MDFileTree",
         true,
@@ -43,34 +52,49 @@ pub fn init<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
             &PredefinedMenuItem::separator(app)?,
             &PredefinedMenuItem::quit(app, Some("MDFileTree を終了"))?,
         ],
-    )?;
+    )
+}
 
-    let file_menu = Submenu::with_items(
-        app,
-        "ファイル",
-        true,
-        &[
-            &item(
-                app,
-                "open-folder",
-                "フォルダを開く…",
-                Some("CmdOrCtrl+Shift+O"),
-            )?,
-            &item(app, "open-file", "ファイルを開く…", Some("CmdOrCtrl+O"))?,
-            &PredefinedMenuItem::separator(app)?,
-            &item(app, "reveal", "Finder で表示", Some("CmdOrCtrl+Alt+R"))?,
-            &PredefinedMenuItem::separator(app)?,
-            &item(
-                app,
-                "export-html",
-                "HTML として書き出す…",
-                Some("CmdOrCtrl+E"),
-            )?,
-            &item(app, "print", "プリント…", Some("CmdOrCtrl+P"))?,
-            &PredefinedMenuItem::separator(app)?,
-            &PredefinedMenuItem::close_window(app, Some("ウィンドウを閉じる"))?,
-        ],
-    )?;
+pub fn init<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
+    #[cfg(target_os = "macos")]
+    let app_menu = app_submenu(app)?;
+
+    #[allow(unused_mut)]
+    let mut file_items: Vec<Box<dyn tauri::menu::IsMenuItem<R>>> = vec![
+        Box::new(item(
+            app,
+            "open-folder",
+            "フォルダを開く…",
+            Some("CmdOrCtrl+Shift+O"),
+        )?),
+        Box::new(item(app, "open-file", "ファイルを開く…", Some("CmdOrCtrl+O"))?),
+        Box::new(PredefinedMenuItem::separator(app)?),
+        Box::new(item(app, "reveal", REVEAL_LABEL, Some("CmdOrCtrl+Alt+R"))?),
+        Box::new(PredefinedMenuItem::separator(app)?),
+        Box::new(item(
+            app,
+            "export-html",
+            "HTML として書き出す…",
+            Some("CmdOrCtrl+E"),
+        )?),
+        Box::new(item(app, "print", "プリント…", Some("CmdOrCtrl+P"))?),
+        Box::new(PredefinedMenuItem::separator(app)?),
+        Box::new(PredefinedMenuItem::close_window(
+            app,
+            Some("ウィンドウを閉じる"),
+        )?),
+    ];
+
+    // macOS 以外にはアプリ名のメニューがないので、終了はファイルメニューに置く
+    #[cfg(not(target_os = "macos"))]
+    {
+        file_items.push(Box::new(PredefinedMenuItem::separator(app)?));
+        file_items.push(Box::new(PredefinedMenuItem::quit(app, Some("終了"))?));
+    }
+
+    let file_refs: Vec<&dyn tauri::menu::IsMenuItem<R>> =
+        file_items.iter().map(|boxed| boxed.as_ref()).collect();
+    let file_menu = Submenu::with_items(app, "ファイル", true, &file_refs)?;
 
     let edit_menu = Submenu::with_items(
         app,
@@ -139,17 +163,21 @@ pub fn init<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
         ],
     )?;
 
-    let menu = Menu::with_items(
-        app,
-        &[
-            &app_menu,
-            &file_menu,
-            &edit_menu,
-            &view_menu,
-            &go_menu,
-            &window_menu,
-        ],
-    )?;
+    #[allow(unused_mut)]
+    let mut submenus: Vec<&dyn tauri::menu::IsMenuItem<R>> = Vec::new();
+
+    #[cfg(target_os = "macos")]
+    submenus.push(&app_menu);
+
+    submenus.extend([
+        &file_menu as &dyn tauri::menu::IsMenuItem<R>,
+        &edit_menu,
+        &view_menu,
+        &go_menu,
+        &window_menu,
+    ]);
+
+    let menu = Menu::with_items(app, &submenus)?;
 
     app.set_menu(menu)?;
 

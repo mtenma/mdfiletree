@@ -1,3 +1,5 @@
+import { accel, FILE_MANAGER } from '../lib/platform'
+
 interface StatusBarProps {
   path: string | null
   size: number | null
@@ -43,7 +45,7 @@ export function StatusBar({
           type="button"
           className="tool-button"
           style={{ height: 20, padding: '0 6px', fontSize: 11.5 }}
-          title="Finder で表示 (⌘⌥R)"
+          title={`${FILE_MANAGER} で表示 (${accel('⌘⌥R')})`}
           onClick={onReveal}
         >
           {path}
