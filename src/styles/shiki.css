@@ -1,0 +1,30 @@
+/* Shiki はライト / ダーク両方の色を CSS 変数として出力する（defaultColor: false）。
+   テーマ切り替え時に再着色しなくて済むよう、ここで参照先を切り替える。 */
+
+.markdown-body .shiki,
+.markdown-body .shiki span {
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+  font-style: var(--shiki-light-font-style);
+  font-weight: var(--shiki-light-font-weight);
+  text-decoration: var(--shiki-light-text-decoration);
+}
+
+:root[data-theme='dark'] .markdown-body .shiki,
+:root[data-theme='dark'] .markdown-body .shiki span {
+  color: var(--shiki-dark);
+  background-color: var(--shiki-dark-bg);
+  font-style: var(--shiki-dark-font-style);
+  font-weight: var(--shiki-dark-font-weight);
+  text-decoration: var(--shiki-dark-text-decoration);
+}
+
+/* 枠と背景は code-wrap 側で描くので、Shiki の背景は殺しておく */
+.markdown-body .code-wrap .shiki,
+.markdown-body .code-wrap .shiki code {
+  background-color: transparent;
+}
+
+.markdown-body .shiki code {
+  display: block;
+}

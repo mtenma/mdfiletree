@@ -1,0 +1,135 @@
+/* 印刷（macOS の「PDF として保存」を含む）用。
+   画面のペインを外し、表が改ページで壊れないようにする。 */
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
+
+  html,
+  body,
+  #root {
+    height: auto;
+    overflow: visible;
+    background: #ffffff;
+    color: #000000;
+  }
+
+  .toolbar,
+  .statusbar,
+  .pane,
+  .splitter,
+  .search-bar,
+  .drop-overlay,
+  .code-copy {
+    display: none !important;
+  }
+
+  .app,
+  .panes {
+    display: block;
+    height: auto;
+  }
+
+  .pane-content {
+    overflow: visible;
+    height: auto;
+  }
+
+  .doc-inner {
+    max-width: none;
+    padding: 0;
+  }
+
+  .markdown-body {
+    font-size: 10.5pt;
+    line-height: 1.6;
+  }
+
+  /* 表は用紙幅に収め、内側スクロールを解除する */
+  .markdown-body .table-wrap {
+    max-height: none !important;
+    overflow: visible !important;
+    background: none;
+    border-color: #999999;
+    break-inside: auto;
+  }
+
+  .markdown-body table {
+    width: 100% !important;
+    min-width: 0 !important;
+    table-layout: auto;
+    font-size: 9.5pt;
+  }
+
+  /* 改ページ後もヘッダー行を出す */
+  .markdown-body thead {
+    display: table-header-group;
+  }
+
+  .markdown-body tfoot {
+    display: table-footer-group;
+  }
+
+  .markdown-body thead th {
+    position: static !important;
+    top: auto !important;
+    background: #f0f0f0 !important;
+    color: #000000;
+    border-bottom: 1.5pt solid #666666;
+  }
+
+  .markdown-body th,
+  .markdown-body td {
+    border-color: #999999;
+    /* 折り返せる方が切れるより読める */
+    overflow-wrap: anywhere;
+  }
+
+  .markdown-body tr {
+    break-inside: avoid;
+  }
+
+  .markdown-body tbody tr:nth-child(2n) > td {
+    background: #f7f7f7 !important;
+  }
+
+  .markdown-body h1,
+  .markdown-body h2,
+  .markdown-body h3,
+  .markdown-body h4 {
+    break-after: avoid;
+  }
+
+  .markdown-body pre,
+  .markdown-body .code-wrap,
+  .markdown-body .mermaid-block,
+  .markdown-body blockquote,
+  .markdown-body figure,
+  .markdown-body img {
+    break-inside: avoid;
+  }
+
+  .markdown-body .code-wrap,
+  .markdown-body pre {
+    border-color: #cccccc;
+    background: #f7f7f7 !important;
+  }
+
+  .markdown-body pre {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* 外部リンクは URL を併記しておくと紙でも追える */
+  .markdown-body a[data-link='external']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    color: #555555;
+  }
+
+  ::highlight(mdfiletree-search),
+  ::highlight(mdfiletree-search-current) {
+    background-color: transparent;
+  }
+}

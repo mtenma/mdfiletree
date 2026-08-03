@@ -1,0 +1,83 @@
+/* 配色トークン。app.css と markdown.css の両方がここを参照する。
+   書き出した HTML でも同じ変数が効くよう、テーマは <html data-theme> で切り替える。 */
+
+:root {
+  color-scheme: light;
+
+  --bg: #ffffff;
+  --bg-elevated: #f6f8fa;
+  --bg-sunken: #eef1f4;
+  --bg-hover: rgba(31, 35, 40, 0.06);
+  --bg-active: rgba(9, 105, 218, 0.12);
+
+  --fg: #1f2328;
+  --fg-muted: #59636e;
+  --fg-subtle: #818b98;
+
+  --border: #d1d9e0;
+  --border-strong: #b4bdc7;
+
+  --accent: #0969da;
+  --accent-fg: #ffffff;
+
+  --table-header-bg: #f2f5f8;
+  --table-stripe: #fafbfc;
+  --code-bg: #f6f8fa;
+  --code-border: #e4e8ec;
+  --quote-border: #d1d9e0;
+
+  --shadow-panel: 0 1px 2px rgba(31, 35, 40, 0.08);
+  --scroll-shadow: rgba(31, 35, 40, 0.16);
+
+  --alert-note: #0969da;
+  --alert-tip: #1a7f37;
+  --alert-important: #8250df;
+  --alert-warning: #9a6700;
+  --alert-caution: #cf222e;
+
+  --search-hit: #ffe08a;
+  --search-hit-current: #ff9f45;
+
+  --font-body: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Hiragino Sans',
+    'Hiragino Kaku Gothic ProN', 'Yu Gothic', Meiryo, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono',
+    monospace;
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --bg: #0d1117;
+  --bg-elevated: #161b22;
+  --bg-sunken: #010409;
+  --bg-hover: rgba(230, 237, 243, 0.08);
+  --bg-active: rgba(68, 147, 248, 0.18);
+
+  --fg: #e6edf3;
+  --fg-muted: #9198a1;
+  --fg-subtle: #6e7681;
+
+  --border: #3d444d;
+  --border-strong: #4d555f;
+
+  --accent: #4493f8;
+  --accent-fg: #0d1117;
+
+  --table-header-bg: #1c222b;
+  --table-stripe: #12171f;
+  --code-bg: #161b22;
+  --code-border: #2a313c;
+  --quote-border: #3d444d;
+
+  --shadow-panel: 0 1px 2px rgba(1, 4, 9, 0.6);
+  --scroll-shadow: rgba(1, 4, 9, 0.7);
+
+  --alert-note: #4493f8;
+  --alert-tip: #3fb950;
+  --alert-important: #ab7df8;
+  --alert-warning: #d29922;
+  --alert-caution: #f85149;
+
+  --search-hit: #9a6700;
+  --search-hit-current: #d29922;
+}

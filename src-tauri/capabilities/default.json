@@ -1,0 +1,14 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "MDFileTree のウィンドウが使う権限（doc-* は文書ごとに追加されるウィンドウ）",
+  "windows": ["main", "doc-*"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-set-title",
+    "dialog:default",
+    "opener:default",
+    "store:default"
+  ]
+}

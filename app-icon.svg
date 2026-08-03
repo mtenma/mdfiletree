@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3b6ea5"/>
+      <stop offset="100%" stop-color="#1f3f66"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" rx="228" ry="228" fill="url(#bg)"/>
+
+  <!-- 用紙 -->
+  <rect x="228" y="176" width="568" height="672" rx="32" ry="32" fill="#ffffff"/>
+
+  <!-- 見出し行 -->
+  <rect x="292" y="252" width="248" height="40" rx="14" fill="#1f3f66"/>
+  <rect x="292" y="320" width="440" height="22" rx="11" fill="#c9d4e2"/>
+
+  <!-- 表 -->
+  <g stroke="#1f3f66" stroke-width="14" fill="none">
+    <rect x="292" y="396" width="440" height="336" rx="16"/>
+    <line x1="292" y1="484" x2="732" y2="484"/>
+    <line x1="292" y1="608" x2="732" y2="608"/>
+    <line x1="438" y1="396" x2="438" y2="732"/>
+    <line x1="586" y1="608" x2="586" y2="732"/>
+  </g>
+  <rect x="299" y="403" width="426" height="74" rx="10" fill="#3b6ea5"/>
+</svg>

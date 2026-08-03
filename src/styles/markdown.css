@@ -1,0 +1,573 @@
+/* 本文の体裁。表の再現性を最優先に組み立てている。 */
+
+.markdown-body {
+  font-family: var(--font-body);
+  font-size: calc(16px * var(--font-scale, 1));
+  line-height: 1.75;
+  color: var(--fg);
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  -webkit-font-smoothing: antialiased;
+}
+
+.markdown-body > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-body > *:last-child {
+  margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------- 見出し */
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  margin: 1.8em 0 0.7em;
+  font-weight: 650;
+  line-height: 1.35;
+  scroll-margin-top: 1.5em;
+}
+
+.markdown-body h1 {
+  font-size: 1.9em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border);
+}
+
+.markdown-body h2 {
+  font-size: 1.5em;
+  padding-bottom: 0.25em;
+  border-bottom: 1px solid var(--border);
+}
+
+.markdown-body h3 {
+  font-size: 1.25em;
+}
+
+.markdown-body h4 {
+  font-size: 1.05em;
+}
+
+.markdown-body h5 {
+  font-size: 0.95em;
+}
+
+.markdown-body h6 {
+  font-size: 0.9em;
+  color: var(--fg-muted);
+}
+
+/* ---------------------------------------------------------- 本文要素 */
+
+.markdown-body p,
+.markdown-body dl,
+.markdown-body details {
+  margin: 0 0 1em;
+}
+
+.markdown-body a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.markdown-body a:hover {
+  text-decoration: underline;
+}
+
+.markdown-body a[data-link='external']::after {
+  content: '↗';
+  font-size: 0.8em;
+  margin-left: 0.15em;
+  color: var(--fg-subtle);
+}
+
+.markdown-body a[data-link='doc'] {
+  text-decoration-style: dotted;
+  text-decoration-line: underline;
+  text-underline-offset: 3px;
+}
+
+.markdown-body ul,
+.markdown-body ol {
+  margin: 0 0 1em;
+  padding-left: 1.9em;
+}
+
+.markdown-body li + li {
+  margin-top: 0.25em;
+}
+
+.markdown-body li > ul,
+.markdown-body li > ol {
+  margin: 0.25em 0 0;
+}
+
+.markdown-body blockquote {
+  margin: 0 0 1em;
+  padding: 0.25em 0 0.25em 1em;
+  border-left: 3px solid var(--quote-border);
+  color: var(--fg-muted);
+}
+
+.markdown-body blockquote > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body hr {
+  height: 1px;
+  margin: 2em 0;
+  border: 0;
+  background: var(--border);
+}
+
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  background: var(--bg-elevated);
+}
+
+.markdown-body img.img-missing {
+  min-width: 120px;
+  min-height: 32px;
+  padding: 8px;
+  border: 1px dashed var(--border-strong);
+  color: var(--fg-subtle);
+  font-size: 0.85em;
+}
+
+.markdown-body kbd {
+  display: inline-block;
+  padding: 0.15em 0.45em;
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.markdown-body mark {
+  padding: 0 0.15em;
+  background: var(--search-hit);
+  color: #1f2328;
+  border-radius: 2px;
+}
+
+.markdown-body abbr[title] {
+  text-decoration: underline dotted;
+  cursor: help;
+}
+
+.markdown-body sub,
+.markdown-body sup {
+  font-size: 0.75em;
+}
+
+/* ---------------------------------------------------------- 表 */
+
+.markdown-body .table-wrap {
+  margin: 1.2em 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  /* 収まる表は入れ子のスクロール領域にしない。
+     そうすることで見出し行の固定がページのスクロールに対して効く */
+  overflow: visible;
+}
+
+/*
+  枠に収まらない表だけ横スクロールにする（JS が data-wide を付ける）。
+  左右の影はスクロールできる向きを示すためのもの（background-attachment の local を利用）。
+*/
+.markdown-body .table-wrap[data-wide='1'] {
+  overflow-x: auto;
+  overflow-y: hidden;
+  background:
+    linear-gradient(to right, var(--bg) 30%, rgba(255, 255, 255, 0)) left center,
+    linear-gradient(to left, var(--bg) 30%, rgba(255, 255, 255, 0)) right center,
+    radial-gradient(farthest-side at 0 50%, var(--scroll-shadow), rgba(0, 0, 0, 0)) left center,
+    radial-gradient(farthest-side at 100% 50%, var(--scroll-shadow), rgba(0, 0, 0, 0)) right center;
+  background-repeat: no-repeat;
+  background-size: 44px 100%, 44px 100%, 12px 100%, 12px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
+
+.markdown-body .table-wrap:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.markdown-body table {
+  /* sticky な見出し行で罫線が消えないよう collapse は使わない */
+  border-collapse: separate;
+  border-spacing: 0;
+  /* 内容に合わせて広がりつつ、狭い表でも枠は幅いっぱいに引く。
+     入りきらない分は .table-wrap の横スクロールに回す */
+  width: max-content;
+  min-width: 100%;
+  font-size: 0.95em;
+  line-height: 1.6;
+}
+
+/* 列幅を colgroup で明示している表は、その割合どおりに枠内へ収める */
+.markdown-body table:has(> colgroup) {
+  width: 100%;
+}
+
+.markdown-body th,
+.markdown-body td {
+  padding: 8px 13px;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdown-body th:last-child,
+.markdown-body td:last-child {
+  border-right: 0;
+}
+
+.markdown-body tbody:last-of-type tr:last-child > td,
+.markdown-body tbody:last-of-type tr:last-child > th {
+  border-bottom: 0;
+}
+
+.markdown-body thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--table-header-bg);
+  font-weight: 650;
+  /* 行をまたいだ見出しセルが下端に張り付かないよう中央に置く */
+  vertical-align: middle;
+  border-bottom: 2px solid var(--border-strong);
+}
+
+/* ヘッダーが複数行（MultiMarkdown のグループ見出し）のときは
+   JS が各行の top を実測して inline style で入れる */
+
+/* 行見出し（td ではなく th が本体側にある場合） */
+.markdown-body tbody th {
+  background: var(--table-header-bg);
+  font-weight: 600;
+}
+
+.markdown-body tbody tr:nth-child(2n) > td {
+  background: var(--table-stripe);
+}
+
+.markdown-body tbody tr:hover > td {
+  background: var(--bg-hover);
+}
+
+/* 複数の tbody（MultiMarkdown のセクション区切り）を線で分ける */
+.markdown-body tbody + tbody > tr:first-child > td,
+.markdown-body tbody + tbody > tr:first-child > th {
+  border-top: 2px solid var(--border-strong);
+}
+
+/* GFM は style、MultiMarkdown は align 属性で寄せを表現する。両方に対応する */
+.markdown-body th[align='center'],
+.markdown-body td[align='center'] {
+  text-align: center;
+}
+
+.markdown-body th[align='right'],
+.markdown-body td[align='right'] {
+  text-align: right;
+}
+
+.markdown-body th[align='left'],
+.markdown-body td[align='left'] {
+  text-align: left;
+}
+
+.markdown-body caption {
+  caption-side: bottom;
+  padding: 8px 13px;
+  color: var(--fg-muted);
+  font-size: 0.9em;
+  text-align: left;
+  border-top: 1px solid var(--border);
+}
+
+/* セルの中身が段落やリストになっていても詰まって見えないようにする */
+.markdown-body td > *:first-child,
+.markdown-body th > *:first-child {
+  margin-top: 0;
+}
+
+.markdown-body td > *:last-child,
+.markdown-body th > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body td ul,
+.markdown-body td ol {
+  padding-left: 1.3em;
+}
+
+/* セル内に入れ子で置かれた表 */
+.markdown-body td table,
+.markdown-body th table {
+  width: 100%;
+  min-width: 0;
+  margin: 0.4em 0;
+  font-size: 0.95em;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------- コード */
+
+.markdown-body code {
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  background: var(--code-bg);
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+}
+
+.markdown-body .code-wrap {
+  position: relative;
+  margin: 1.2em 0;
+  border: 1px solid var(--code-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--code-bg);
+}
+
+.markdown-body .code-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 10px 4px 12px;
+  border-bottom: 1px solid var(--code-border);
+  background: var(--bg-elevated);
+  font-size: 0.75em;
+  color: var(--fg-muted);
+}
+
+.markdown-body .code-lang {
+  font-family: var(--font-mono);
+  text-transform: lowercase;
+  letter-spacing: 0.03em;
+}
+
+.markdown-body .code-copy {
+  padding: 2px 8px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--fg-muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.markdown-body .code-copy:hover {
+  border-color: var(--border);
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.markdown-body pre {
+  margin: 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  line-height: 1.6;
+  background: var(--code-bg);
+}
+
+.markdown-body pre code {
+  padding: 0;
+  background: none;
+  font-size: inherit;
+}
+
+/* コードフェンス以外の pre（生 HTML など）にも枠を付ける */
+.markdown-body > pre:not(.code-block),
+.markdown-body blockquote > pre:not(.code-block) {
+  border: 1px solid var(--code-border);
+  border-radius: 8px;
+}
+
+/* ---------------------------------------------------------- Mermaid */
+
+.markdown-body .mermaid-block {
+  margin: 1.2em 0;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  text-align: center;
+  overflow-x: auto;
+}
+
+.markdown-body .mermaid-block[data-state='done'] .mermaid-source {
+  display: none;
+}
+
+.markdown-body .mermaid-source {
+  margin: 0;
+  padding: 8px;
+  text-align: left;
+  color: var(--fg-muted);
+  background: none;
+}
+
+.markdown-body .mermaid-render svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.markdown-body .mermaid-error {
+  margin: 0 0 8px;
+  color: var(--alert-caution);
+  font-size: 0.9em;
+  text-align: left;
+}
+
+/* ---------------------------------------------------------- タスクリスト */
+
+.markdown-body .contains-task-list {
+  padding-left: 1.3em;
+  list-style: none;
+}
+
+.markdown-body .task-list-item {
+  position: relative;
+}
+
+.markdown-body .task-list-item input[type='checkbox'] {
+  margin: 0 0.45em 0 0;
+  vertical-align: -0.08em;
+}
+
+.markdown-body .task-list-item label {
+  cursor: default;
+}
+
+/* ---------------------------------------------------------- 定義リスト */
+
+.markdown-body dt {
+  margin-top: 0.8em;
+  font-weight: 650;
+}
+
+.markdown-body dd {
+  margin: 0.2em 0 0 1.5em;
+  color: var(--fg-muted);
+}
+
+/* ---------------------------------------------------------- 脚注 */
+
+.markdown-body .footnotes {
+  margin-top: 2.5em;
+  padding-top: 1em;
+  border-top: 1px solid var(--border);
+  font-size: 0.9em;
+  color: var(--fg-muted);
+}
+
+.markdown-body .footnotes-sep {
+  display: none;
+}
+
+.markdown-body .footnote-item p {
+  margin-bottom: 0.4em;
+}
+
+.markdown-body .footnote-ref a,
+.markdown-body .footnote-backref {
+  text-decoration: none;
+}
+
+/* ---------------------------------------------------------- GitHub 形式の注意書き */
+
+.markdown-body .markdown-alert {
+  margin: 1.2em 0;
+  padding: 0.8em 1em;
+  border-left: 4px solid var(--alert-note);
+  border-radius: 0 6px 6px 0;
+  background: var(--bg-elevated);
+}
+
+.markdown-body .markdown-alert > *:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body .markdown-alert-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  margin-bottom: 0.4em;
+  font-weight: 650;
+  color: var(--alert-note);
+}
+
+.markdown-body .markdown-alert-title svg {
+  fill: currentColor;
+  width: 1em;
+  height: 1em;
+}
+
+.markdown-body .markdown-alert-tip {
+  border-left-color: var(--alert-tip);
+}
+.markdown-body .markdown-alert-tip .markdown-alert-title {
+  color: var(--alert-tip);
+}
+
+.markdown-body .markdown-alert-important {
+  border-left-color: var(--alert-important);
+}
+.markdown-body .markdown-alert-important .markdown-alert-title {
+  color: var(--alert-important);
+}
+
+.markdown-body .markdown-alert-warning {
+  border-left-color: var(--alert-warning);
+}
+.markdown-body .markdown-alert-warning .markdown-alert-title {
+  color: var(--alert-warning);
+}
+
+.markdown-body .markdown-alert-caution {
+  border-left-color: var(--alert-caution);
+}
+.markdown-body .markdown-alert-caution .markdown-alert-title {
+  color: var(--alert-caution);
+}
+
+/* ---------------------------------------------------------- 数式 */
+
+.markdown-body .katex {
+  font-size: 1.05em;
+}
+
+.markdown-body .katex-display {
+  margin: 1em 0;
+  padding: 0.2em 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* ---------------------------------------------------------- 文書内検索 */
+
+::highlight(mdfiletree-search) {
+  background-color: var(--search-hit);
+  color: #1f2328;
+}
+
+::highlight(mdfiletree-search-current) {
+  background-color: var(--search-hit-current);
+  color: #1f2328;
+}
