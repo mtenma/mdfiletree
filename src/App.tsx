@@ -11,6 +11,7 @@ import { Splitter } from './components/Splitter'
 import { StatusBar } from './components/StatusBar'
 import { TocPanel } from './components/TocPanel'
 import { Toolbar } from './components/Toolbar'
+import { ContextMenu, type ContextMenuItem } from './components/ContextMenu'
 import { WelcomeScreen } from './components/WelcomeScreen'
 import { searchSupported, useSearch } from './hooks/useSearch'
 import { buildStandaloneHtml } from './lib/export'
@@ -27,6 +28,7 @@ import {
   takePendingOpen,
   writeTextFile,
 } from './lib/ipc'
+import { insertPageBreakAt, removePageBreakAt } from './lib/pagebreak'
 import { MD_EXTS, basename, dirname, relativeTo } from './lib/paths'
 import { IS_MAC, accel } from './lib/platform'
 import { offsetWithin, topmostHeadingId } from './markdown/dom'
@@ -83,6 +85,9 @@ export default function App() {
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [dropActive, setDropActive] = useState(false)
+  const [menu, setMenu] = useState<{ x: number; y: number; items: ContextMenuItem[] } | null>(
+    null,
+  )
 
   const scrollerRef = useRef<HTMLDivElement>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
@@ -272,6 +277,68 @@ export default function App() {
       }
     },
     [openPath],
+  )
+
+  /* ------------------------------------------------------------ 改ページ */
+
+  /**
+   * 文書を書き換える。書き込んだあとはファイル監視が拾って読み直すので、
+   * ここでは再描画しない（読んでいた位置もそちらで保たれる）。
+   */
+  const rewriteDocument = useCallback(async (nextContent: string): Promise<void> => {
+    const openDoc = currentRef.current
+    if (!openDoc) return
+    try {
+      await writeTextFile(openDoc.payload.path, nextContent)
+    } catch (caught) {
+      setError(describeError(caught))
+    }
+  }, [])
+
+  /** 指定した行の手前に改ページを入れる */
+  const insertPageBreak = useCallback(
+    (line: number) => {
+      const openDoc = currentRef.current
+      if (!openDoc) return
+
+      void rewriteDocument(
+        insertPageBreakAt(openDoc.payload.content, line, openDoc.result.lineOffset),
+      )
+      setMessage('改ページを入れました')
+    },
+    [rewriteDocument],
+  )
+
+  /** 指定した行にある改ページを取り除く */
+  const removePageBreak = useCallback(
+    (line: number) => {
+      const openDoc = currentRef.current
+      if (!openDoc) return
+
+      const next = removePageBreakAt(openDoc.payload.content, line, openDoc.result.lineOffset)
+      if (next === null) return
+
+      void rewriteDocument(next)
+      setMessage('改ページを外しました')
+    },
+    [rewriteDocument],
+  )
+
+  /** 本文の右クリックで、その場所に応じた操作を出す */
+  const handleDocContextMenu = useCallback(
+    (info: { x: number; y: number; line: number | null; onBreak: boolean }) => {
+      if (info.line === null) return
+
+      const line = info.line
+      setMenu({
+        x: info.x,
+        y: info.y,
+        items: info.onBreak
+          ? [{ label: 'この改ページを外す', onSelect: () => removePageBreak(line) }]
+          : [{ label: 'ここに改ページを入れる', onSelect: () => insertPageBreak(line) }],
+      })
+    },
+    [insertPageBreak, removePageBreak],
   )
 
   const reloadCurrent = useCallback(() => {
@@ -842,6 +909,7 @@ export default function App() {
               onActiveHeading={setActiveHeading}
               onOpenDoc={handleOpenDoc}
               onError={setError}
+              onContextMenu={handleDocContextMenu}
             />
           ) : (
             <WelcomeScreen
@@ -867,6 +935,10 @@ export default function App() {
       />
 
       {dropActive && <div className="drop-overlay">ここにドロップして開く</div>}
+
+      {menu && (
+        <ContextMenu x={menu.x} y={menu.y} items={menu.items} onClose={() => setMenu(null)} />
+      )}
     </div>
   )
 }

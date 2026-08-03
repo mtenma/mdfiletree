@@ -18,6 +18,7 @@
   --border-strong: #b4bdc7;
 
   --accent: #0969da;
+  /* 印刷したときのページ境目。本文にない色にして見分けやすくする */
   --accent-fg: #ffffff;
 
   --table-header-bg: #f2f5f8;

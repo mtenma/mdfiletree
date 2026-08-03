@@ -7,6 +7,11 @@ export interface FrontMatter {
   raw: string | null
   /** front matter を取り除いた本文 */
   body: string
+  /**
+   * front matter が占める行数。
+   * 本文中の行番号をファイル全体の行番号に戻すときに足す。
+   */
+  lineOffset: number
 }
 
 const FRONT_MATTER = /^﻿?---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/
@@ -14,21 +19,22 @@ const FRONT_MATTER = /^﻿?---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/
 export function splitFrontMatter(source: string): FrontMatter {
   const match = source.match(FRONT_MATTER)
   if (!match) {
-    return { data: null, raw: null, body: source }
+    return { data: null, raw: null, body: source, lineOffset: 0 }
   }
 
   const raw = match[1]
   const body = source.slice(match[0].length)
+  const lineOffset = (match[0].match(/\n/g) ?? []).length
 
   try {
     const parsed = parseYaml(raw)
     if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      return { data: parsed as Record<string, unknown>, raw, body }
+      return { data: parsed as Record<string, unknown>, raw, body, lineOffset }
     }
-    return { data: null, raw, body }
+    return { data: null, raw, body, lineOffset }
   } catch {
     // YAML として壊れていても本文は読めるようにする
-    return { data: null, raw, body }
+    return { data: null, raw, body, lineOffset }
   }
 }
 

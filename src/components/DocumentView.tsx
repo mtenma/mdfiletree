@@ -33,6 +33,12 @@ interface DocumentViewProps {
   onActiveHeading: (id: string | null) => void
   onOpenDoc: (path: string, hash?: string) => void
   onError: (message: string) => void
+  /**
+   * 本文を右クリックしたときに呼ぶ。
+   * line は元の Markdown での行番号（front matter を除いた本文基準）。
+   * onPageBreak が渡されていない場合は右クリックを拾わない。
+   */
+  onContextMenu?: (info: { x: number; y: number; line: number | null; onBreak: boolean }) => void
 }
 
 function FrontMatterCard({ result }: { result: RenderResult }) {
@@ -75,6 +81,7 @@ export function DocumentView({
   onActiveHeading,
   onOpenDoc,
   onError,
+  onContextMenu,
 }: DocumentViewProps) {
   const copyTimerRef = useRef<number | undefined>(undefined)
 
@@ -205,6 +212,28 @@ export function DocumentView({
 
   useEffect(() => () => window.clearTimeout(copyTimerRef.current), [])
 
+  const handleContextMenu = useCallback(
+    (event: React.MouseEvent<HTMLElement>) => {
+      if (!onContextMenu) return
+      const target = event.target as HTMLElement
+
+      // 改ページの線そのものを押した場合は、その改ページを対象にする
+      const marker = target.closest<HTMLElement>('.pagebreak')
+      const anchor = marker ?? target.closest<HTMLElement>('[data-line]')
+      const raw = anchor?.dataset.line
+      const line = raw === undefined ? null : Number(raw)
+
+      event.preventDefault()
+      onContextMenu({
+        x: event.clientX,
+        y: event.clientY,
+        line: line !== null && Number.isFinite(line) ? line : null,
+        onBreak: marker !== null,
+      })
+    },
+    [onContextMenu],
+  )
+
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLElement>) => {
       const target = event.target as HTMLElement
@@ -275,6 +304,7 @@ export function DocumentView({
         ref={bodyRef}
         className="markdown-body"
         onClick={handleClick}
+        onContextMenu={handleContextMenu}
         // renderer.ts で DOMPurify を通したうえで、Shiki と Mermaid は描画後の DOM に適用している
         dangerouslySetInnerHTML={htmlProp}
       />

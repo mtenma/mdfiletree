@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Tauri が組み立てる Info.plist に、ここの内容を足し込む。
+
+  印刷や保存の画面は macOS が用意するもので、その言語はアプリが
+  どの言語に対応しているかの申告で決まる。何も書かないと英語扱いになり、
+  日本語環境でも英語の画面が出る。
+-->
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>ja</string>
+
+  <key>CFBundleLocalizations</key>
+  <array>
+    <string>ja</string>
+    <string>en</string>
+  </array>
+
+  <!-- 用意していない言語の項目は英語で補う -->
+  <key>CFBundleAllowMixedLocalizations</key>
+  <true/>
+</dict>
+</plist>

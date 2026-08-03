@@ -571,3 +571,27 @@
   background-color: var(--search-hit-current);
   color: #1f2328;
 }
+
+/* ------------------------------------------------------------ 改ページ */
+
+/* `<!-- pagebreak -->` の位置。画面では区切りが見えるようにし、
+   印刷ではここで実際にページを送る（print.css 側で指定）。 */
+.markdown-body .pagebreak {
+  position: relative;
+  height: 0;
+  margin: 2em 0;
+  border-top: 1.5px dashed var(--accent);
+}
+
+.markdown-body .pagebreak::after {
+  content: '改ページ';
+  position: absolute;
+  top: -0.85em;
+  right: 0;
+  padding: 0 0.5em;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--accent);
+  background: var(--bg);
+  white-space: nowrap;
+}

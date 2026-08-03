@@ -34,6 +34,18 @@ export interface RenderResult {
   frontMatterRaw: string | null
   hasMath: boolean
   hasMermaid: boolean
+  /** front matter が占める行数。data-line をファイルの行番号に戻すのに使う */
+  lineOffset: number
+}
+
+/** 文書に書いておくと、その位置で改ページする目印 */
+export const PAGE_BREAK_MARKER = '<!-- pagebreak -->'
+
+const PAGE_BREAK_PATTERN = /^<!--\s*pagebreak\s*-->\s*$/i
+
+/** その行が改ページの目印かどうか */
+export function isPageBreakLine(line: string | undefined): boolean {
+  return line !== undefined && PAGE_BREAK_PATTERN.test(line.trim())
 }
 
 /*
@@ -82,8 +94,37 @@ const md = new MarkdownIt({
   .use(fenceBlocks)
   .use(tableWrap)
 
+/*
+ * 画面の要素から元の Markdown の行を辿れるようにする。
+ * 改ページの目印を入れる位置を決めるのに使う。
+ */
+md.core.ruler.push('source-line', (state) => {
+  for (const token of state.tokens) {
+    // 閉じタグには付けない（同じ行番号が二重に出てしまう）
+    if (token.map && token.nesting !== -1) {
+      token.attrSet('data-line', String(token.map[0]))
+    }
+  }
+  return true
+})
+
+/*
+ * `<!-- pagebreak -->` を目に見える区切りに変える。
+ * ほかのビューアで開いたときはただのコメントとして無視される。
+ */
+md.core.ruler.push('page-break', (state) => {
+  for (const token of state.tokens) {
+    if (token.type !== 'html_block' || !PAGE_BREAK_PATTERN.test(token.content.trim())) {
+      continue
+    }
+    const line = token.map?.[0] ?? 0
+    token.content = `<div class="pagebreak" data-line="${line}" role="separator" aria-label="改ページ"></div>\n`
+  }
+  return true
+})
+
 export function renderMarkdown(source: string): RenderResult {
-  const { data, raw, body } = splitFrontMatter(source)
+  const { data, raw, body, lineOffset } = splitFrontMatter(source)
   const html = sanitizeHtml(md.render(body))
 
   return {
@@ -92,5 +133,6 @@ export function renderMarkdown(source: string): RenderResult {
     frontMatterRaw: raw,
     hasMath: html.includes('katex'),
     hasMermaid: html.includes('mermaid-block'),
+    lineOffset,
   }
 }
