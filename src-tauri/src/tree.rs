@@ -4,6 +4,9 @@ use std::path::Path;
 /// リーフとして扱う Markdown の拡張子
 pub const MD_EXTS: [&str; 6] = ["md", "markdown", "mdown", "mkd", "mdtxt", "mdtext"];
 
+/// 設定で表示対象に加えられる HTML の拡張子
+pub const HTML_EXTS: [&str; 2] = ["html", "htm"];
+
 /// 走査から除外するディレクトリ名
 const SKIP_DIRS: [&str; 11] = [
     "node_modules",
@@ -48,6 +51,13 @@ pub fn is_markdown(path: &Path) -> bool {
         .unwrap_or(false)
 }
 
+pub fn is_html(path: &Path) -> bool {
+    path.extension()
+        .and_then(|e| e.to_str())
+        .map(|e| HTML_EXTS.contains(&e.to_ascii_lowercase().as_str()))
+        .unwrap_or(false)
+}
+
 fn should_skip_dir(name: &str) -> bool {
     SKIP_DIRS.contains(&name) || name.starts_with('.')
 }
@@ -55,10 +65,11 @@ fn should_skip_dir(name: &str) -> bool {
 struct ScanCtx {
     count: usize,
     truncated: bool,
+    include_html: bool,
 }
 
 /// ディレクトリを再帰的に走査する。
-/// Markdown を1つも含まないディレクトリは結果から取り除く。
+/// 表示対象を1つも含まないディレクトリは結果から取り除く。
 fn scan_dir(dir: &Path, depth: usize, ctx: &mut ScanCtx) -> Vec<TreeNode> {
     if depth >= MAX_DEPTH || ctx.truncated {
         return Vec::new();
@@ -91,7 +102,7 @@ fn scan_dir(dir: &Path, depth: usize, ctx: &mut ScanCtx) -> Vec<TreeNode> {
                 continue;
             }
             let children = scan_dir(&path, depth + 1, ctx);
-            // Markdown を含まないディレクトリは表示しない
+            // 表示対象を含まないディレクトリは表示しない
             if children.is_empty() {
                 continue;
             }
@@ -102,7 +113,9 @@ fn scan_dir(dir: &Path, depth: usize, ctx: &mut ScanCtx) -> Vec<TreeNode> {
                 is_dir: true,
                 children,
             });
-        } else if file_type.is_file() && is_markdown(&path) {
+        } else if file_type.is_file()
+            && (is_markdown(&path) || (ctx.include_html && is_html(&path)))
+        {
             ctx.count += 1;
             files.push(TreeNode {
                 name,
@@ -127,7 +140,7 @@ fn scan_dir(dir: &Path, depth: usize, ctx: &mut ScanCtx) -> Vec<TreeNode> {
     dirs
 }
 
-pub fn scan(root: &Path) -> Result<TreeResult, String> {
+pub fn scan(root: &Path, include_html: bool) -> Result<TreeResult, String> {
     if !root.is_dir() {
         return Err(format!(
             "フォルダではありません: {}",
@@ -138,6 +151,7 @@ pub fn scan(root: &Path) -> Result<TreeResult, String> {
     let mut ctx = ScanCtx {
         count: 0,
         truncated: false,
+        include_html,
     };
     let children = scan_dir(root, 0, &mut ctx);
 

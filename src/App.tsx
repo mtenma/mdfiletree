@@ -6,7 +6,9 @@ import { confirm, open as openDialog, save } from '@tauri-apps/plugin-dialog'
 
 import { DocumentView, type ScrollTarget } from './components/DocumentView'
 import { FolderTree } from './components/FolderTree'
+import { HtmlView } from './components/HtmlView'
 import { SearchBar } from './components/SearchBar'
+import { SettingsModal } from './components/SettingsModal'
 import { Splitter } from './components/Splitter'
 import { StatusBar } from './components/StatusBar'
 import { TocPanel } from './components/TocPanel'
@@ -29,7 +31,7 @@ import {
   writeTextFile,
 } from './lib/ipc'
 import { insertPageBreakAt, removePageBreakAt } from './lib/pagebreak'
-import { MD_EXTS, basename, dirname, relativeTo } from './lib/paths'
+import { HTML_EXTS, MD_EXTS, basename, dirname, isHtmlPath, relativeTo } from './lib/paths'
 import { IS_MAC, accel } from './lib/platform'
 import { offsetWithin, topmostHeadingId } from './markdown/dom'
 import { renderMarkdown, type RenderResult } from './markdown/renderer'
@@ -49,11 +51,19 @@ const FONT_SCALE_MIN = 0.7
 const FONT_SCALE_MAX = 2.2
 const FONT_SCALE_STEP = 0.1
 
-interface OpenDocument {
-  payload: DocumentPayload
-  result: RenderResult
-  scrollTarget: ScrollTarget
-}
+type OpenDocument =
+  | {
+      kind: 'markdown'
+      payload: DocumentPayload
+      result: RenderResult
+      scrollTarget: ScrollTarget
+    }
+  | {
+      // HTML は変換せず iframe でそのまま見せるため、描画結果を持たない
+      kind: 'html'
+      payload: DocumentPayload
+      scrollTarget: ScrollTarget
+    }
 
 interface History {
   stack: string[]
@@ -82,6 +92,7 @@ export default function App() {
   const [history, setHistory] = useState<History>({ stack: [], index: -1 })
 
   const [searchOpen, setSearchOpen] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [dropActive, setDropActive] = useState(false)
@@ -99,14 +110,16 @@ export default function App() {
   const currentRef = useRef<OpenDocument | null>(null)
   const folderRef = useRef<string | null>(null)
   const historyRef = useRef<History>({ stack: [], index: -1 })
+  const includeHtmlRef = useRef(false)
   currentRef.current = current
   folderRef.current = folder
   historyRef.current = history
+  includeHtmlRef.current = settings.includeHtml
 
   const search = useSearch({
     bodyRef,
     scrollerRef,
-    contentKey: current?.result.html ?? null,
+    contentKey: current?.kind === 'markdown' ? current.result.html : null,
   })
 
   /* ------------------------------------------------------------------ 設定 */
@@ -180,13 +193,26 @@ export default function App() {
           if (!proceed) return
         }
 
-        const result = renderMarkdown(payload.content)
+        if (isHtmlPath(payload.path)) {
+          setCurrent({
+            kind: 'html',
+            payload,
+            scrollTarget: options.scrollTarget ?? { kind: 'top' },
+          })
+          // Markdown 表示の名残（目次・検索）は HTML では成り立たないので畳む
+          setToc([])
+          setActiveHeading(null)
+          setSearchOpen(false)
+        } else {
+          const result = renderMarkdown(payload.content)
 
-        setCurrent({
-          payload,
-          result,
-          scrollTarget: options.scrollTarget ?? { kind: 'top' },
-        })
+          setCurrent({
+            kind: 'markdown',
+            payload,
+            result,
+            scrollTarget: options.scrollTarget ?? { kind: 'top' },
+          })
+        }
         setError(null)
 
         if (options.pushHistory !== false) {
@@ -213,7 +239,7 @@ export default function App() {
 
   const openFolder = useCallback(async (path: string): Promise<void> => {
     try {
-      const scanned = await scanTree(path)
+      const scanned = await scanTree(path, includeHtmlRef.current)
       setTree(scanned)
       setFolder(scanned.root.path)
       setError(null)
@@ -299,7 +325,7 @@ export default function App() {
   const insertPageBreak = useCallback(
     (line: number) => {
       const openDoc = currentRef.current
-      if (!openDoc) return
+      if (!openDoc || openDoc.kind !== 'markdown') return
 
       void rewriteDocument(
         insertPageBreakAt(openDoc.payload.content, line, openDoc.result.lineOffset),
@@ -313,7 +339,7 @@ export default function App() {
   const removePageBreak = useCallback(
     (line: number) => {
       const openDoc = currentRef.current
-      if (!openDoc) return
+      if (!openDoc || openDoc.kind !== 'markdown') return
 
       const next = removePageBreakAt(openDoc.payload.content, line, openDoc.result.lineOffset)
       if (next === null) return
@@ -423,7 +449,7 @@ export default function App() {
 
       const root = folderRef.current
       if (structural && root) {
-        void scanTree(root)
+        void scanTree(root, includeHtmlRef.current)
           .then(setTree)
           .catch(() => {
             /* 走査に失敗しても表示中の文書には影響しない */
@@ -435,6 +461,19 @@ export default function App() {
       void unlisten.then((off) => off())
     }
   }, [reloadCurrent])
+
+  // HTML 表示設定の切り替えを、開いているツリーへ即座に反映する
+  useEffect(() => {
+    if (!settingsLoaded) return
+    const root = folderRef.current
+    if (!root) return
+
+    void scanTree(root, settings.includeHtml)
+      .then(setTree)
+      .catch(() => {
+        /* 走査に失敗しても表示中の文書には影響しない */
+      })
+  }, [settings.includeHtml, settingsLoaded])
 
   useEffect(() => {
     const unlisten = getCurrentWebview().onDragDropEvent((event) => {
@@ -484,6 +523,7 @@ export default function App() {
         title: 'ファイルを開く',
         filters: [
           { name: 'Markdown', extensions: [...MD_EXTS, 'txt'] },
+          ...(settings.includeHtml ? [{ name: 'HTML', extensions: HTML_EXTS }] : []),
           { name: 'すべてのファイル', extensions: ['*'] },
         ],
       })
@@ -491,7 +531,7 @@ export default function App() {
     } catch (caught) {
       setError(`ファイルを選べませんでした: ${describeError(caught)}`)
     }
-  }, [openPath])
+  }, [openPath, settings.includeHtml])
 
   const setFontScale = useCallback((next: number) => {
     setSettings((previous) => ({
@@ -601,19 +641,25 @@ export default function App() {
         case 'reveal':
           handleReveal()
           break
+        // 書き出し・印刷・検索は Markdown 表示の機能なので、HTML 表示中は受け付けない
         case 'export-html':
+          if (currentRef.current?.kind === 'html') break
           void handleExport()
           break
         case 'print':
+          if (currentRef.current?.kind === 'html') break
           void handlePrint()
           break
         case 'find':
+          if (currentRef.current?.kind === 'html') break
           openSearch()
           break
         case 'find-next':
+          if (currentRef.current?.kind === 'html') break
           search.next()
           break
         case 'find-prev':
+          if (currentRef.current?.kind === 'html') break
           search.previous()
           break
         case 'toggle-tree':
@@ -639,6 +685,9 @@ export default function App() {
           break
         case 'go-forward':
           goHistory(1)
+          break
+        case 'open-settings':
+          setSettingsOpen(true)
           break
         default:
           break
@@ -750,6 +799,7 @@ export default function App() {
         ']': 'go-forward',
         e: 'export-html',
         p: 'print',
+        ',': 'open-settings',
       }
 
       const action = map[event.key.toLowerCase()]
@@ -787,7 +837,8 @@ export default function App() {
     return folder ? relativeTo(folder, current.payload.path) : current.payload.path
   }, [current, folder])
 
-  const hasDocument = current !== null
+  // 検索・書き出し・印刷は Markdown の描画結果に対する機能
+  const hasDocument = current?.kind === 'markdown'
 
   return (
     <div className="app">
@@ -813,6 +864,7 @@ export default function App() {
         onZoomReset={() => setFontScale(1)}
         onExport={() => void handleExport()}
         onPrint={() => void handlePrint()}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       <div className="panes">
@@ -842,6 +894,7 @@ export default function App() {
                   truncated={tree?.truncated ?? false}
                   currentPath={current?.payload.path ?? null}
                   expanded={expanded}
+                  includeHtml={settings.includeHtml}
                   onToggle={handleTreeToggle}
                   onSelect={(path) => void loadDocument(path)}
                 />
@@ -898,19 +951,23 @@ export default function App() {
           )}
 
           {current ? (
-            <DocumentView
-              result={current.result}
-              docDir={current.payload.dir}
-              theme={theme}
-              scrollTarget={current.scrollTarget}
-              scrollerRef={scrollerRef}
-              bodyRef={bodyRef}
-              onToc={setToc}
-              onActiveHeading={setActiveHeading}
-              onOpenDoc={handleOpenDoc}
-              onError={setError}
-              onContextMenu={handleDocContextMenu}
-            />
+            current.kind === 'html' ? (
+              <HtmlView content={current.payload.content} docDir={current.payload.dir} />
+            ) : (
+              <DocumentView
+                result={current.result}
+                docDir={current.payload.dir}
+                theme={theme}
+                scrollTarget={current.scrollTarget}
+                scrollerRef={scrollerRef}
+                bodyRef={bodyRef}
+                onToc={setToc}
+                onActiveHeading={setActiveHeading}
+                onOpenDoc={handleOpenDoc}
+                onError={setError}
+                onContextMenu={handleDocContextMenu}
+              />
+            )
           ) : (
             <WelcomeScreen
               recentFolders={settings.recentFolders}
@@ -935,6 +992,16 @@ export default function App() {
       />
 
       {dropActive && <div className="drop-overlay">ここにドロップして開く</div>}
+
+      {settingsOpen && (
+        <SettingsModal
+          includeHtml={settings.includeHtml}
+          onIncludeHtmlChange={(value) =>
+            setSettings((previous) => ({ ...previous, includeHtml: value }))
+          }
+          onClose={() => setSettingsOpen(false)}
+        />
+      )}
 
       {menu && (
         <ContextMenu x={menu.x} y={menu.y} items={menu.items} onClose={() => setMenu(null)} />

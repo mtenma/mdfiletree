@@ -8,6 +8,8 @@ export interface Settings {
   tocVisible: boolean
   treeWidth: number
   tocWidth: number
+  /** HTML ファイル（.html / .htm）を表示対象に含めるか */
+  includeHtml: boolean
   lastFolder: string | null
   lastFile: string | null
   recentFolders: string[]
@@ -21,6 +23,7 @@ export const DEFAULT_SETTINGS: Settings = {
   tocVisible: true,
   treeWidth: 260,
   tocWidth: 240,
+  includeHtml: false,
   lastFolder: null,
   lastFile: null,
   recentFolders: [],

@@ -33,6 +33,7 @@ const REVEAL_LABEL: &str = "Finder で表示";
 /// サービスや「ほかを隠す」も macOS 固有なので、まとめてここに閉じ込める。
 #[cfg(target_os = "macos")]
 fn app_submenu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
+    let settings = item(app, "open-settings", "設定…", Some("Cmd+Comma"))?;
     Submenu::with_items(
         app,
         "MDFileTree",
@@ -43,6 +44,8 @@ fn app_submenu<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<Submenu<R>> {
                 Some("MDFileTree について"),
                 Some(AboutMetadata::default()),
             )?,
+            &PredefinedMenuItem::separator(app)?,
+            &settings,
             &PredefinedMenuItem::separator(app)?,
             &PredefinedMenuItem::services(app, Some("サービス"))?,
             &PredefinedMenuItem::separator(app)?,
@@ -85,9 +88,16 @@ pub fn init<R: Runtime>(app: &AppHandle<R>) -> tauri::Result<()> {
         )?),
     ];
 
-    // macOS 以外にはアプリ名のメニューがないので、終了はファイルメニューに置く
+    // macOS 以外にはアプリ名のメニューがないので、設定と終了はファイルメニューに置く
     #[cfg(not(target_os = "macos"))]
     {
+        file_items.push(Box::new(PredefinedMenuItem::separator(app)?));
+        file_items.push(Box::new(item(
+            app,
+            "open-settings",
+            "設定…",
+            Some("CmdOrCtrl+Comma"),
+        )?));
         file_items.push(Box::new(PredefinedMenuItem::separator(app)?));
         file_items.push(Box::new(PredefinedMenuItem::quit(app, Some("終了"))?));
     }

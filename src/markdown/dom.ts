@@ -1,7 +1,7 @@
 import { convertFileSrc } from '@tauri-apps/api/core'
 import GithubSlugger from 'github-slugger'
 
-import { isAbsolute, isMarkdownPath, resolvePath, safeDecode } from '../lib/paths'
+import { isAbsolute, isHtmlPath, isMarkdownPath, resolvePath, safeDecode } from '../lib/paths'
 import type { TocItem } from '../types'
 
 const EXTERNAL_SCHEME = /^(https?|data|blob|asset|tauri|mailto|tel|ftp|javascript):/i
@@ -66,7 +66,7 @@ export function classifyLinks(root: HTMLElement, docDir: string): void {
     }
 
     const absolute = isAbsolute(bare) ? bare : resolvePath(docDir, bare)
-    anchor.dataset.link = isMarkdownPath(absolute) ? 'doc' : 'file'
+    anchor.dataset.link = isMarkdownPath(absolute) || isHtmlPath(absolute) ? 'doc' : 'file'
     anchor.dataset.target = absolute
     if (hash) anchor.dataset.hash = safeDecode(hash)
   })

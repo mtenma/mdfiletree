@@ -1,7 +1,8 @@
 import { invoke } from '@tauri-apps/api/core'
 import type { DocumentPayload, PathKind, TreeResult } from '../types'
 
-export const scanTree = (root: string) => invoke<TreeResult>('scan_tree', { root })
+export const scanTree = (root: string, includeHtml: boolean) =>
+  invoke<TreeResult>('scan_tree', { root, includeHtml })
 
 export const readDocument = (path: string) => invoke<DocumentPayload>('read_document', { path })
 

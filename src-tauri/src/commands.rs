@@ -74,9 +74,9 @@ fn allow_dir<R: Runtime>(app: &AppHandle<R>, dir: &Path) {
 }
 
 #[tauri::command]
-pub fn scan_tree(root: String) -> Result<tree::TreeResult, String> {
+pub fn scan_tree(root: String, include_html: bool) -> Result<tree::TreeResult, String> {
     let path = resolve(&root)?;
-    tree::scan(&path)
+    tree::scan(&path, include_html)
 }
 
 #[tauri::command]

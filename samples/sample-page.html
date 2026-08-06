@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <title>HTML 表示のサンプル</title>
+    <link rel="stylesheet" href="assets/page.css" />
+    <style>
+      .hero {
+        padding: 24px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #1d3557, #457b9d);
+        color: #f1faee;
+      }
+      .hero h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="hero">
+      <h1>HTML 表示のサンプル</h1>
+      <p>このページはアプリの Markdown スタイルではなく、ページ自身の CSS で表示されます。</p>
+    </div>
+
+    <section class="card">
+      <h2>確認ポイント</h2>
+      <ul>
+        <li>インラインの <code>&lt;style&gt;</code> が効いている（上のグラデーション）</li>
+        <li>外部 CSS（assets/page.css）が効いている（このカードの枠）</li>
+        <li>相対パスの画像が出る（下の図）</li>
+        <li>JavaScript は実行されない（アラートが出ない）</li>
+      </ul>
+      <img src="assets/sample.svg" alt="相対パスの画像" width="120" />
+      <p><a href="kitchen-sink.md">kitchen-sink.md へ戻る</a></p>
+    </section>
+
+    <script>
+      // sandbox 付き iframe で表示されるため、これは実行されない
+      alert('JS が実行されました')
+    </script>
+  </body>
+</html>

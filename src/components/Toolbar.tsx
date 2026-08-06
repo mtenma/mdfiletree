@@ -23,6 +23,7 @@ interface ToolbarProps {
   onZoomReset: () => void
   onExport: () => void
   onPrint: () => void
+  onOpenSettings: () => void
 }
 
 export function Toolbar({
@@ -47,6 +48,7 @@ export function Toolbar({
   onZoomReset,
   onExport,
   onPrint,
+  onOpenSettings,
 }: ToolbarProps) {
   return (
     <header className="toolbar" data-tauri-drag-region>
@@ -199,6 +201,15 @@ export function Toolbar({
           onClick={onToggleTheme}
         >
           {theme === 'dark' ? '🌙' : '☀'}
+        </button>
+        <button
+          type="button"
+          className="tool-button"
+          title={`設定 (${accel('⌘,')})`}
+          aria-label="設定"
+          onClick={onOpenSettings}
+        >
+          ⚙
         </button>
       </div>
     </header>

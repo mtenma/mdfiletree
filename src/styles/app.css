@@ -512,6 +512,70 @@ body {
   text-align: center;
 }
 
+/* -------------------------------------------------- 設定モーダル */
+
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 32%);
+}
+
+.settings-modal {
+  min-width: 340px;
+  max-width: 90vw;
+  padding: 14px 16px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 18%);
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.settings-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  user-select: none;
+}
+
+.settings-row input[type='checkbox'] {
+  accent-color: var(--accent);
+}
+
+.settings-note {
+  margin: 6px 0 0 24px;
+  color: var(--fg-subtle);
+  font-size: 12px;
+}
+
+/* ---------------------------------------------------------- HTML 表示 */
+
+/* HTML 文書は白背景前提のものが多いため、テーマに関わらず白で固定する */
+.html-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #fff;
+}
+
 /* -------------------------------------------------- 右クリックメニュー */
 
 .context-menu {

@@ -8,6 +8,8 @@ import { IS_WINDOWS } from './platform'
 
 export const MD_EXTS = ['md', 'markdown', 'mdown', 'mkd', 'mdtxt', 'mdtext']
 
+export const HTML_EXTS = ['html', 'htm']
+
 /** パスを組み立てるときに使う区切り */
 const SEP = IS_WINDOWS ? '\\' : '/'
 
@@ -137,6 +139,10 @@ function startsWithPath(value: string, prefix: string): boolean {
 
 export function isMarkdownPath(p: string): boolean {
   return MD_EXTS.includes(extname(p))
+}
+
+export function isHtmlPath(p: string): boolean {
+  return HTML_EXTS.includes(extname(p))
 }
 
 /** `%20` などが混ざったリンクでも壊れないようにデコードする */

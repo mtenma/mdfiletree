@@ -6,6 +6,7 @@ interface FolderTreeProps {
   truncated: boolean
   currentPath: string | null
   expanded: Set<string>
+  includeHtml: boolean
   onToggle: (path: string) => void
   onSelect: (path: string) => void
 }
@@ -77,6 +78,7 @@ export function FolderTree({
   truncated,
   currentPath,
   expanded,
+  includeHtml,
   onToggle,
   onSelect,
 }: FolderTreeProps) {
@@ -85,7 +87,13 @@ export function FolderTree({
   }
 
   if (root.children.length === 0) {
-    return <p className="empty-note">このフォルダに Markdown はありません。</p>
+    return (
+      <p className="empty-note">
+        {includeHtml
+          ? 'このフォルダに Markdown / HTML はありません。'
+          : 'このフォルダに Markdown はありません。'}
+      </p>
+    )
   }
 
   return (
