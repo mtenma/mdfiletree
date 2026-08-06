@@ -31,7 +31,15 @@ import {
   writeTextFile,
 } from './lib/ipc'
 import { insertPageBreakAt, removePageBreakAt } from './lib/pagebreak'
-import { HTML_EXTS, MD_EXTS, basename, dirname, isHtmlPath, relativeTo } from './lib/paths'
+import {
+  HTML_EXTS,
+  MD_EXTS,
+  basename,
+  dirname,
+  isHtmlPath,
+  isWithin,
+  relativeTo,
+} from './lib/paths'
 import { IS_MAC, accel } from './lib/platform'
 import { offsetWithin, topmostHeadingId } from './markdown/dom'
 import { renderMarkdown, type RenderResult } from './markdown/renderer'
@@ -244,6 +252,16 @@ export default function App() {
       setFolder(scanned.root.path)
       setError(null)
 
+      // 新しいフォルダの外にある文書は閉じる（ツリーと表示の食い違いを防ぐ）
+      const openDoc = currentRef.current
+      const closingCurrent = openDoc !== null && !isWithin(scanned.root.path, openDoc.payload.path)
+      if (closingCurrent) {
+        setCurrent(null)
+        setToc([])
+        setActiveHeading(null)
+        setSearchOpen(false)
+      }
+
       await allowAssetDir(scanned.root.path)
       await startWatch(scanned.root.path)
 
@@ -251,6 +269,7 @@ export default function App() {
         ...previous,
         lastFolder: scanned.root.path,
         recentFolders: pushRecent(previous.recentFolders, scanned.root.path),
+        ...(closingCurrent ? { lastFile: null } : {}),
       }))
     } catch (caught) {
       setError(describeError(caught))

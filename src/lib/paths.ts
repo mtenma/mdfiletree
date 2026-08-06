@@ -113,6 +113,16 @@ export function resolvePath(base: string, relative: string): string {
   return normalize(`${trimTrailing(base)}${SEP}${relative}`)
 }
 
+/** target が root 配下（root 自身を含む）にあるかどうか */
+export function isWithin(root: string, target: string): boolean {
+  const normalizedRoot = trimTrailing(normalize(root))
+  const normalizedTarget = normalize(target)
+  if (samePath(normalizedTarget, normalizedRoot)) return true
+
+  const prefix = normalizedRoot.endsWith(SEP) ? normalizedRoot : `${normalizedRoot}${SEP}`
+  return startsWithPath(normalizedTarget, prefix)
+}
+
 /** root から見た相対パス。root 配下でなければ絶対パスのまま返す */
 export function relativeTo(root: string, target: string): string {
   const normalizedRoot = trimTrailing(normalize(root))
