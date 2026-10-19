@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { listen } from '@tauri-apps/api/event'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { confirm, open as openDialog, save } from '@tauri-apps/plugin-dialog'
@@ -448,8 +447,12 @@ export default function App() {
 
   /* -------------------------------------------------------- Tauri イベント */
 
+  // Rust 側はどれも emit_to でウィンドウを指定して送ってくる。
+  // event の listen() は宛先を問わず受け取るので、自分のウィンドウ宛てだけを受ける形で登録する。
+  // 宛先を問わずに受けると、メニュー操作が開いている全ウィンドウで走ってしまう。
+
   useEffect(() => {
-    const unlisten = listen('pending-open', async () => {
+    const unlisten = getCurrentWindow().listen('pending-open', async () => {
       await openHandedPaths(await takePendingOpen())
     })
     return () => {
@@ -458,7 +461,7 @@ export default function App() {
   }, [openHandedPaths])
 
   useEffect(() => {
-    const unlisten = listen<FsChange>('fs-changed', (event) => {
+    const unlisten = getCurrentWindow().listen<FsChange>('fs-changed', (event) => {
       const { paths, structural } = event.payload
 
       const openPathValue = currentRef.current?.payload.path
@@ -730,7 +733,9 @@ export default function App() {
   )
 
   useEffect(() => {
-    const unlisten = listen<string>('menu-action', (event) => runAction(event.payload))
+    const unlisten = getCurrentWindow().listen<string>('menu-action', (event) =>
+      runAction(event.payload),
+    )
     return () => {
       void unlisten.then((off) => off())
     }
